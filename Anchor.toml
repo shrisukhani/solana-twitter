@@ -1,5 +1,5 @@
 [programs.localnet]
-solana_twitter = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
+solana_twitter = "47MTrjTLBt2iYcceMi8gtCVWCsFAn1Yt84Y6LdBNpVxX"
 
 [registry]
 url = "https://anchor.projectserum.com"
