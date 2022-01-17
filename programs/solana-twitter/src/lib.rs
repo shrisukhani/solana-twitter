@@ -12,13 +12,31 @@ const MAX_CONTENT_LENGTH: usize = 280 * 4; // 280 chars max.
 #[program]
 pub mod solana_twitter {
     use super::*;
-    pub fn initialize(_ctx: Context<Initialize>) -> ProgramResult {
+    pub fn send_tweet(ctx: Context<SendTweet>, topic: String, content: String) -> ProgramResult {
+        if topic.chars().count() > 50 {
+            return Err(ErrorCode::TopicTooLong.into());
+        }
+
+        if content.chars().count() > 280 {
+            return Err(ErrorCode::ContentTooLong.into());
+        }
+
+        ctx.accounts.tweet.topic = topic;
+        ctx.accounts.tweet.content = content;
+        ctx.accounts.tweet.author = ctx.accounts.author.key();
+        ctx.accounts.tweet.timestamp = Clock::get().unwrap().unix_timestamp;
         Ok(())
     }
 }
 
 #[derive(Accounts)]
-pub struct Initialize {}
+pub struct SendTweet<'info> {
+    #[account(init, payer = author, space = Tweet::LEN)]
+    pub tweet: Account<'info, Tweet>,
+    #[account(mut)]
+    pub author: Signer<'info>,
+    pub system_program: Program<'info, System>,
+}
 
 #[account]
 pub struct Tweet {
@@ -36,4 +54,12 @@ impl Tweet {
         + MAX_TOPIC_LENGTH
         + STRING_LENGTH_PREFIX
         + MAX_CONTENT_LENGTH;
+}
+
+#[error]
+pub enum ErrorCode {
+    #[msg("The provided topic should be 50 characters long maximum.")]
+    TopicTooLong,
+    #[msg("The provided content should be 280 characters long maximum.")]
+    ContentTooLong,
 }
